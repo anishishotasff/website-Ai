@@ -289,6 +289,33 @@
   border: 1px solid #333;
 }
 
+.mode-indicator {
+  margin-bottom: 15px;
+  display: flex;
+  justify-content: center;
+}
+
+.mode-badge {
+  padding: 8px 20px;
+  border-radius: 20px;
+  font-size: 0.9em;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ai-mode {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.template-mode {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
 .prompt-box textarea {
   width: 100%;
   background: #0f0f0f;

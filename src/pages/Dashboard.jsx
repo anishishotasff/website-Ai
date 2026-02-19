@@ -17,7 +17,7 @@ function Dashboard({ user, onLogout, updateUser }) {
   const [customDomain, setCustomDomain] = useState(user.customDomain || '');
   const [apiKey, setApiKey] = useState(localStorage.getItem('geminiApiKey') || '');
   const [showApiKeyInput, setShowApiKeyInput] = useState(false);
-  const [useAI, setUseAI] = useState(!!apiKey);
+  const [useAI, setUseAI] = useState(false); // Default to false, only enable when API key is added
 
   const handleGenerate = async () => {
     if (!prompt.trim()) return;
@@ -35,13 +35,15 @@ function Dashboard({ user, onLogout, updateUser }) {
           code = await generateWebsiteWithAI(prompt, apiKey);
         } catch (aiError) {
           console.error('AI generation failed:', aiError);
-          alert('AI generation failed. Using template mode instead. Please check your API key.');
-          // Fallback to template
+          // Automatically switch to template mode
+          setUseAI(false);
+          alert('AI generation failed. Switching to template mode. Please check your API key in settings.');
+          // Use template as fallback
           await new Promise(resolve => setTimeout(resolve, 1500));
           code = generateWebsite(prompt);
         }
       } else {
-        // Use template-based generation
+        // Use template-based generation (default)
         await new Promise(resolve => setTimeout(resolve, 1500));
         code = generateWebsite(prompt);
       }
@@ -50,15 +52,7 @@ function Dashboard({ user, onLogout, updateUser }) {
       setWebsiteName(prompt.slice(0, 30));
     } catch (error) {
       console.error('Generation error:', error);
-      alert('Failed to generate website. Using template mode.');
-      // Final fallback
-      try {
-        const code = generateWebsite(prompt);
-        setGeneratedCode(code);
-        setWebsiteName(prompt.slice(0, 30));
-      } catch (fallbackError) {
-        alert('Generation failed completely. Please try again.');
-      }
+      alert('Failed to generate website. Please try again.');
     } finally {
       setIsGenerating(false);
     }
@@ -67,7 +61,7 @@ function Dashboard({ user, onLogout, updateUser }) {
   const handleSaveApiKey = () => {
     if (apiKey.trim()) {
       localStorage.setItem('geminiApiKey', apiKey.trim());
-      setUseAI(true);
+      setUseAI(true); // Enable AI only after saving key
       setShowApiKeyInput(false);
       alert('Gemini API key saved! AI generation is now enabled. Try generating a website!');
     } else {
@@ -224,6 +218,13 @@ function Dashboard({ user, onLogout, updateUser }) {
           )}
           
           <div className="prompt-box">
+            <div className="mode-indicator">
+              {useAI ? (
+                <span className="mode-badge ai-mode">🤖 AI Mode Active</span>
+              ) : (
+                <span className="mode-badge template-mode">⚡ Template Mode (Fast)</span>
+              )}
+            </div>
             <textarea
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
@@ -237,7 +238,10 @@ function Dashboard({ user, onLogout, updateUser }) {
               disabled={isGenerating || !prompt.trim()}
               className="generate-btn"
             >
-              {isGenerating ? (useAI ? 'AI is thinking...' : 'Generating...') : 'Generate Website'} <Send size={16} />
+              {isGenerating 
+                ? (useAI ? '🤖 AI is thinking...' : '⚡ Generating...') 
+                : (useAI ? '🤖 Generate with AI' : '⚡ Generate Website')} 
+              <Send size={16} />
             </button>
           </div>
         </div>
